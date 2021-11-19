@@ -48,7 +48,7 @@ public class Main {
         MongoDatabase database = mongoClient.getDatabase("UserInformation");
         MongoCollection<Document> collection = database.getCollection("user");
 
-        Document picturesDoc = new Document().append("name", user.getName());
+        Document picturesDoc = new Document().append("name", user.getName()).append("id",user.getId());
         picturesDoc.append("pictures", Arrays.asList());
         try {
             collection.insertOne(picturesDoc);
@@ -56,14 +56,14 @@ public class Main {
             System.err.println("Unable to insert due to an error: " + me);
         }
         for (int i=0;i<user.pictures.size();i++) {
-            Bson filter = eq("name",user.getName() );
+            Bson filter = eq("id",user.getId() );
             Bson update = Updates.addToSet("pictures", new Document()
                     .append("source",user.pictures.get(i).getSource())
                     .append("id",i));
             UpdateOptions options = new UpdateOptions().upsert(true);
             collection.updateOne(filter, update, options);
             System.out.println("\nInsertion completed\n");
-            printTable(user);
+            printTable();
 
         }
 
@@ -76,12 +76,12 @@ public class Main {
         MongoDatabase database = mongoClient.getDatabase("UserInformation");
         MongoCollection<Document> collection = database.getCollection("user");
 
-        Bson filter = eq("name", user.getName());
+        Bson filter = eq("id", user.getId());
         String set ="pictures."+String.valueOf(user.pictures.indexOf(picture))+".source";
         Bson update = set(set, picture.getSource());
         collection.updateOne(filter, update);
         System.out.println("\nUpdate completed\n");
-        printTable(user);
+        printTable();
 
     }
     public static void deletePic(User user,Picture picture){
@@ -89,18 +89,18 @@ public class Main {
         MongoDatabase database = mongoClient.getDatabase("UserInformation");
         MongoCollection<Document> collection = database.getCollection("user");
 
-        Bson query = new Document().append("name", user.getName());
+        Bson query = new Document().append("id", user.getId());
         //String set ="pictures."+String.valueOf(user.pictures.indexOf(picture));
         Bson fields = new Document().append("pictures", new Document().append( "source", picture.getSource()));
         Bson update = new Document("$pull",fields);
 
         collection.updateOne( query, update );
         System.out.println("\nDeletion completed\n");
-        printTable(user);
+        printTable();
 
     }
 
-    public static void printTable(User user){
+    public static void printTable(){
         MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
         MongoDatabase database = mongoClient.getDatabase("UserInformation");
         MongoCollection<Document> collection = database.getCollection("user");
