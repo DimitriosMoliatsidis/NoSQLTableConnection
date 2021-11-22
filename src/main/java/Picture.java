@@ -1,6 +1,6 @@
 public class Picture {
-    int id;
-    String source;
+    private int id;
+    private String source;
 
     public Picture(int id, String source) {
         this.id = id;

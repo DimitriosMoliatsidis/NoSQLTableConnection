@@ -1,9 +1,7 @@
 import com.mongodb.MongoException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
-import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
-import org.bson.BsonValue;
+
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -17,15 +15,14 @@ import static com.mongodb.client.model.Updates.set;
 
 public class Main {
     public static void main(String[] args) {
-        String wrongSource="";
 
-        User user1 = new User(1, "Nikos");
+        User user1 = new User(getNextId(), "Nikos");
         Picture pic1 = new Picture(1, "c://helloworld");
         user1.insertPicture(pic1);
 
         insertIntoDb(user1);
 
-        User user2=new User(2,"Dimitris");
+        User user2=new User(getNextId(),"Dimitris");
         Picture pic2= new Picture(2,"c://picture2source");
         user2.insertPicture(pic1);
         user2.insertPicture(pic2);
@@ -33,7 +30,7 @@ public class Main {
         insertIntoDb(user2);
 
         //update wrong source
-        wrongSource= pic1.getSource();
+        String wrongSource= pic1.getSource();
         pic1.setSource("c://rightSource");
         updatePic(user2,wrongSource,pic1);
 
@@ -55,10 +52,10 @@ public class Main {
         } catch (MongoException me) {
             System.err.println("Unable to insert due to an error: " + me);
         }
-        for (int i=0;i<user.pictures.size();i++) {
+        for (int i=0;i<user.getPictures().size();i++) {
             Bson filter = eq("id",user.getId() );
             Bson update = Updates.addToSet("pictures", new Document()
-                    .append("source",user.pictures.get(i).getSource())
+                    .append("source",user.getPictures().get(i).getSource())
                     .append("id",i));
             UpdateOptions options = new UpdateOptions().upsert(true);
             collection.updateOne(filter, update, options);
@@ -66,8 +63,6 @@ public class Main {
             printTable();
 
         }
-
-
 
     }
     public static void updatePic(User user , String wrongSource,Picture picture){
@@ -77,7 +72,7 @@ public class Main {
         MongoCollection<Document> collection = database.getCollection("user");
 
         Bson filter = eq("id", user.getId());
-        String set ="pictures."+String.valueOf(user.pictures.indexOf(picture))+".source";
+        String set ="pictures."+String.valueOf(user.getPictures().indexOf(picture))+".source";
         Bson update = set(set, picture.getSource());
         collection.updateOne(filter, update);
         System.out.println("\nUpdate completed\n");
@@ -85,6 +80,7 @@ public class Main {
 
     }
     public static void deletePic(User user,Picture picture){
+
         MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
         MongoDatabase database = mongoClient.getDatabase("UserInformation");
         MongoCollection<Document> collection = database.getCollection("user");
@@ -110,5 +106,18 @@ public class Main {
             System.out.println(it.next());
         }
 
+    }
+    public static int getNextId(){
+        int id=1;
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("UserInformation");
+        MongoCollection<Document> collection = database.getCollection("user");
+        FindIterable<Document> iterDoc = collection.find();
+        Iterator it = iterDoc.iterator();
+        while (it.hasNext()) {
+            it.next();
+            id++;
+        }
+        return id;
     }
 }

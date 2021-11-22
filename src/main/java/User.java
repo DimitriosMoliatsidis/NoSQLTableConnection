@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 
 public class User {
-    int id;
-    String name;
-    ArrayList<Picture> pictures= new ArrayList<>();
+    private int id;
+    private String name;
+    private ArrayList<Picture> pictures= new ArrayList<>();
 
     public User(int id, String name) {
         this.id = id;
