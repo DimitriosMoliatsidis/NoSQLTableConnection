@@ -1,20 +1,22 @@
+import org.bson.types.ObjectId;
+
 import java.util.ArrayList;
 
 public class User {
-    private int id;
+    private Object id;
     private String name;
     private ArrayList<Picture> pictures= new ArrayList<>();
 
-    public User(int id, String name) {
-        this.id = id;
+    public User(String name) {
+
         this.name = name;
     }
 
-    public int getId() {
+    public Object getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Object id) {
         this.id = id;
     }
 
